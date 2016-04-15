@@ -1,0 +1,11 @@
+* {
+    font-size: 1em;
+}
+#grid, #score {
+    /*border: 1px solid;*/
+    width: 1em;
+    display: block;
+    margin: 0em auto;
+    padding: 0.5em;
+    font-size: 20px;
+}
