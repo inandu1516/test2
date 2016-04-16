@@ -21,16 +21,17 @@ var
     KEY_LEFT = 37, KEY_UP = 38, KEY_RIGHT = 39, KEY_DOWN  = 40,
     SCORE_1 = 0, GAME_STARTED = false, GAME_OVER = false;
 
-// //JSON GRID
-// var jsnGrid = [];
-// for (var x = 0; x < ROWS; x++) {
-//     jsnGrid.push([]);
-//     for (var y = 0; y < COLS; y++) {
-//         jsnGrid[x].push({x: 0, y: 0});
-//     }
-// }
-// console.log(jsnGrid);
-// io.sockets.emit('serverGrid', jsnGrid);
+//JSON GRID
+var jsnGrid = [];
+for (var x = 0; x < ROWS; x++) {
+    jsnGrid.push([]);
+    for (var y = 0; y < COLS; y++) {
+        jsnGrid[x].push({x: 0, y: 0});
+    }
+}
+console.log(jsnGrid);
+console.log(jsnGrid.length);
+console.log(jsnGrid[2].length);
 
 grid = {
     _grid: [],
@@ -84,10 +85,9 @@ function snake() {
 
 var snake_1 = new snake();
 var snake_2 = new snake();
-var snakes = {'snake_1': snake_1, 'snake_2': snake_2};
 
-var sp_1 = {x:0, y:0};                            //snake start point for snake_1
-var sp_2 = {x:4, y:9};                            //snake start point for snake_2
+var sp_1 = {x:0, y: Math.round(COLS/2)};                            //snake start point for snake_1
+var sp_2 = {x: ROWS - 1, y: Math.round(COLS/2)};                            //snake start point for snake_2
 
 function setFood() {
     var empty = [];
@@ -117,116 +117,122 @@ function init() {
 }
 
 function update(key, ID) {
-    // change direction of the snake depending on which keys are pressed
 
-    var WhichSnake = 'snake_'.concat(ID);
+    if(ID == 1) {
+        if (key == KEY_LEFT) {
+            snake_1.direction = LEFT;
+        }
+        if (key == KEY_UP) {
+            snake_1.direction = UP;
+        }
+        if (key == KEY_RIGHT) {
+            snake_1.direction = RIGHT;
+        }
+        if (key == KEY_DOWN) {
+            snake_1.direction = DOWN;
+        }
 
-    if (key == KEY_LEFT) {
-        snakes[WhichSnake].direction = LEFT;
+        var nx_1 = snake_1.last.x;
+        var ny_1 = snake_1.last.y;
+
+        switch (snake_1.direction) {
+            case LEFT:
+                ny_1--;
+                break;
+            case UP:
+                nx_1--;       //CAMBIAT ELS ORDRES X - Y !!!
+                break;
+            case RIGHT:
+                ny_1++;
+                break;
+            case DOWN:
+                nx_1++;
+                break;
+        }
+
+        if (0 > nx_1 || nx_1 > 4 || 0 > ny_1 || ny_1 > 9) {
+            console.log('Snake 1 reached the border !! => nx_1:'+nx_1+', ny_1:'+ny_1);
+            GAME_OVER = true;
+            snake_1.delete(1);
+            snake_1.init(UP, sp_1.x, sp_1.y);
+            grid.set(1, sp_1.x, sp_1.y);
+            return;
+        }else if(grid.get(nx_1, ny_1) === 1){                   //grid.get() !=== 0 || FRUIT
+            console.log('Snake 1 reached himself !!');
+            GAME_OVER = true;
+            snake_1.delete(1);
+            snake_1.init(UP, sp_1.x, sp_1.y);
+            grid.set(1, sp_1.x, sp_1.y);
+            return;
+        }else if(grid.get(nx_1, ny_1) === 2){
+            console.log('Snake 1 reached Snake 2 !!');
+            GAME_OVER = true;
+            snake_1.delete(1);
+            snake_1.init(UP, sp_1.x, sp_1.y);
+            grid.set(1, sp_1.x, sp_1.y);
+            return;
+        }else{
+            GAME_OVER = false;
+        }
+
     }
-    if (key == KEY_UP) {
-        snakes[WhichSnake].direction = UP;
-    }
-    if (key == KEY_RIGHT) {
-        snakes[WhichSnake].direction = RIGHT;
-    }
-    if (key == KEY_DOWN) {
-        snakes[WhichSnake].direction = DOWN;
-    }
 
-    // pop the last element from the snake queue (the head)
+    if(ID == 2) {
+        if (key == KEY_LEFT) {
+            snake_2.direction = LEFT;
+        }
+        if (key == KEY_UP) {
+            snake_2.direction = UP;
+        }
+        if (key == KEY_RIGHT) {
+            snake_2.direction = RIGHT;
+        }
+        if (key == KEY_DOWN) {
+            snake_2.direction = DOWN;
+        }
 
-    // var nx = snakes[WhichSnake].last.x;
-    // var ny = snakes[WhichSnake].last.y;
+        var nx_2 = snake_2.last.x;
+        var ny_2 = snake_2.last.y;
 
-    var nx_1 = snake_1.last.x;
-    var ny_1 = snake_1.last.y;
+        switch (snake_2.direction) {
+            case LEFT:
+                ny_2--;
+                break;
+            case UP:
+                nx_2--;
+                break;
+            case RIGHT:
+                ny_2++;
+                break;
+            case DOWN:
+                nx_2++;
+                break;
+        }
 
-    var nx_2 = snake_2.last.x;
-    var ny_2 = snake_2.last.y;
-
-
-    // updates the position depending on the snake direction
-    switch (snakes[WhichSnake].direction) {
-        case LEFT:
-            ny_1--;
-            break;
-        case UP:
-            nx_1--;       //CAMBIAT ELS ORDRES X - Y !!!
-            break;
-        case RIGHT:
-            ny_1++;
-            break;
-        case DOWN:
-            nx_1++;
-            break;
-    }
-
-    switch (snake_2.direction) {
-        case LEFT:
-            ny_2--;
-            break;
-        case UP:
-            nx_2--;
-            break;
-        case RIGHT:
-            ny_2++;
-            break;
-        case DOWN:
-            nx_2++;
-            break;
-    }
-
-    // checks all gameover conditions
-
-    if (0 > nx_1 || nx_1 > 4 || 0 > ny_1 || ny_1 > 9) {
-        console.log('Snake 1 reached the border !!');
-        GAME_OVER = true;
-        snake_1.delete(1);
-        snake_1.init(UP, sp_1.x, sp_1.y);
-        grid.set(1, sp_1.x, sp_1.y);
-        return;
-    }else if(grid.get(nx_1, ny_1) === 1){                   //grid.get() !=== 0 || FRUIT
-        console.log('Snake 1 reached himself !!');
-        GAME_OVER = true;
-        snake_1.delete(1);
-        snake_1.init(UP, sp_1.x, sp_1.y);
-        grid.set(1, sp_1.x, sp_1.y);
-        return;
-    }else if(grid.get(nx_1, ny_1) === 2){
-        console.log('Snake 1 reached Snake 2 !!');
-        GAME_OVER = true;
-        snake_1.delete(1);
-        snake_1.init(UP, sp_1.x, sp_1.y);
-        grid.set(1, sp_1.x, sp_1.y);
-        return;
-    }else{
-        GAME_OVER = false;
-    }
-    
-    if (0 > nx_2 || nx_2 > 4 || 0 > ny_2 || ny_2 > 9) {
-        console.log('Snake 2 reached the border !!');
-        GAME_OVER = true;
-        snake_2.delete(2);
-        snake_2.init(UP, sp_2.x, sp_2.y);
-        grid.set(2, sp_2.x, sp_2.y);
-        return;
-    }else if(grid.get(nx_2, ny_2) === 2){
-        console.log('Snake 2 reached himself !!');
-        GAME_OVER = true;
-        snake_1.delete(2);
-        snake_2.init(UP, sp_2.x, sp_2.y);
-        grid.set(2, sp_2.x, sp_2.y);
-        return;
-    }else if(grid.get(nx_2, ny_2) === 1){
-        console.log('Snake 2 reached Snake 1 !!');
-        GAME_OVER = true;
-        snake_1.delete(2);
-        snake_2.init(UP, sp_2.x, sp_2.y);
-        grid.set(2, sp_2.x, sp_2.y);
-        return;
-    }else{
-        GAME_OVER = false;
+        if (0 > nx_2 || nx_2 > 4 || 0 > ny_2 || ny_2 > 9) {
+            console.log('Snake 2 reached the border !!');
+            GAME_OVER = true;
+            snake_2.delete(2);
+            snake_2.init(UP, sp_2.x, sp_2.y);
+            grid.set(2, sp_2.x, sp_2.y);
+            return;
+        }else if(grid.get(nx_2, ny_2) === 2){
+            console.log('Snake 2 reached himself !!');
+            GAME_OVER = true;
+            snake_1.delete(2);
+            snake_2.init(UP, sp_2.x, sp_2.y);
+            grid.set(2, sp_2.x, sp_2.y);
+            return;
+        }else if(grid.get(nx_2, ny_2) === 1){
+            console.log('Snake 2 reached Snake 1 !!');
+            GAME_OVER = true;
+            snake_1.delete(2);
+            snake_2.init(UP, sp_2.x, sp_2.y);
+            grid.set(2, sp_2.x, sp_2.y);
+            return;
+        }else{
+            GAME_OVER = false;
+        }
     }
 
     // // add a snake at the new position and append it to the snake queue
