@@ -5,7 +5,21 @@
     /*border: 1px solid;*/
     width: 1em;
     display: block;
-    margin: 0em auto;
-    padding: 0.5em;
+    /*margin: 0em auto;*/
+    /*padding: 0.5em;*/
     font-size: 20px;
+}
+
+#grid {
+    /*border: 1px solid red;*/
+}
+
+#table {
+    border: 1px solid blue;
+}
+
+td {
+    padding: 0em 0.5em;
+    text-align: center;
+    border: 1px dotted;
 }
