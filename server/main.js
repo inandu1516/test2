@@ -269,7 +269,7 @@ io.on('connection', function (socket) {     //sever listens connections to it
     console.log('game started: ' + started);
 
     io.sockets.emit('serverGrid', grid._grid);
-    console.log(grid._grid);
+    // console.log(grid._grid);
 
     socket.on('update', function (key, ID) {
         update(key, ID);
